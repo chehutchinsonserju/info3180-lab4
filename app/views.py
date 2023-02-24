@@ -6,6 +6,7 @@ from werkzeug.utils import secure_filename
 from app.models import UserProfile
 from app.forms import LoginForm
 
+from werkzeug.security import check_password_hash
 
 ###
 # Routing for your application.
@@ -26,13 +27,24 @@ def about():
 @app.route('/upload', methods=['POST', 'GET'])
 def upload():
     # Instantiate your form class
+    form = LoginForm()
 
     # Validate file upload on submit
     if form.validate_on_submit():
         # Get file data and save to your uploads folder
+        username = form.username.data
+        password = form.password.data
 
-        flash('File Saved', 'success')
-        return redirect(url_for('home')) # Update this to redirect the user to a route that displays all uploaded image files
+        user = UserProfile.query.filter_by(username=username).first()
+
+        if user and check_password_hash(user.password, password):
+            # Log the user in and go to home page if the password is right
+            login_user(user)
+            flash('Logged in.', 'success')
+            return redirect(url_for('upload'))
+        else:
+            #do not log in
+            flash('Invalid username or password.', 'failed')
 
     return render_template('upload.html')
 
