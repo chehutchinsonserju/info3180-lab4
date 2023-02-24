@@ -7,7 +7,8 @@ from app.models import UserProfile
 from app.forms import LoginForm
 
 from werkzeug.security import check_password_hash
-
+from app.forms import LoginForm, UploadForm
+from flask_login import login_required
 ###
 # Routing for your application.
 ###
@@ -27,7 +28,16 @@ def about():
 @app.route('/upload', methods=['POST', 'GET'])
 def upload():
     # Instantiate your form class
-    form = LoginForm()
+    form = UploadForm()
+
+    if request.method == 'POST' and form.validate_on_submit():
+        file = form.file.data
+        filename = secure_filename(file.filename)
+        file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+        flash('File uploaded', 'success')
+        return redirect(url_for('upload'))
+
+    return render_template('upload.html', form=form)
 
     # Validate file upload on submit
     if form.validate_on_submit():
@@ -52,24 +62,20 @@ def upload():
 @app.route('/login', methods=['POST', 'GET'])
 def login():
     form = LoginForm()
+    if form.validate_on_submit():
+        username = form.username.data
+        password = form.password.data
+        
+        user = UserProfile.query.filter_by(username=username).first()
 
-    # change this to actually validate the entire form submission
-    # and not just one field
-    if form.username.data:
-        # Get the username and password values from the form.
+        if user is not None and check_password_hash(user.password, password):
+            login_user(user)
+            flash('You have successfully logged in', 'success')
+            return redirect(url_for('upload'))
 
-        # Using your model, query database for a user based on the username
-        # and password submitted. Remember you need to compare the password hash.
-        # You will need to import the appropriate function to do so.
-        # Then store the result of that query to a `user` variable so it can be
-        # passed to the login_user() method below.
+        flash('Invalid username or password', 'danger')
 
-        # Gets user id, load into session
-        login_user(user)
-
-        # Remember to flash a message to the user
-        return redirect(url_for("home"))  # The user should be redirected to the upload form instead
-    return render_template("login.html", form=form)
+    return render_template('login.html', form=form)
 
 # user_loader callback. This callback is used to reload the user object from
 # the user ID stored in the session
