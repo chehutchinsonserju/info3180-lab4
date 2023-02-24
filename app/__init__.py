@@ -4,10 +4,11 @@ from flask_sqlalchemy import SQLAlchemy
 from .config import Config
 # import flask migrate here
 from flask_migrate import Migrate
+import os
 
 app = Flask(__name__)
 app.config.from_object(Config)
-
+app.config['UPLOAD_FOLDER'] = os.path.abspath('./uploads/')
 db = SQLAlchemy(app)
 
 # Instantiate Flask-Migrate library here

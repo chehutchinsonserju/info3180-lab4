@@ -1,5 +1,6 @@
 from . import db
 from werkzeug.security import generate_password_hash
+import os
 
 
 class UserProfile(db.Model):
@@ -39,3 +40,4 @@ class UserProfile(db.Model):
         self.last_name = last_name
         self.username = username
         self.password = generate_password_hash(password)
+
