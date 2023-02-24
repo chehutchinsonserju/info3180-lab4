@@ -138,7 +138,6 @@ def get_uploaded_images():
                 uploaded_images.append(file)
     return uploaded_images
 
-
 from flask import render_template, url_for
 import os
 
