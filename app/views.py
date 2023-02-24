@@ -93,8 +93,7 @@ def flash_errors(form):
         for error in errors:
             flash(u"Error in the %s field - %s" % (
                 getattr(form, field).label.text,
-                error
-), 'danger')
+                error), 'unfortunate')
 
 @app.route('/<file_name>.txt')
 def send_text_file(file_name):
@@ -144,8 +143,17 @@ from flask import render_template, url_for
 import os
 
 @app.route('/files')
+@login_required
 def files():
     images = get_uploaded_images()
     image_urls = [url_for('get_image', filename=image) for image in images]
     return render_template('files.html', image_urls=image_urls)
 
+from flask_login import logout_user
+
+@app.route('/logout', methods=['GET'])
+@login_required
+def logout():
+    logout_user()
+    flash('Logged out.', 'success')
+    return redirect(url_for('home'))
